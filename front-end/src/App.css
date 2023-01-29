@@ -1,15 +1,18 @@
 #root {
   overflow: hidden;
+  width: 100vw;
   height: 100vh;
-  background-color: #ffffff;
 }
 
 .App{
   overflow: hidden;
   display: flex;
+  width: 100vw;
   height: 100vh;
+  background-color: #ffffff;
+  cursor: url('./assets/pointer.svg'), auto;
 }
 
 .color{
-  background: #484848;
+  background: #3d3d3d;
 }

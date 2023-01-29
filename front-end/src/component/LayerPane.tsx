@@ -1,20 +1,40 @@
-import { ReactNode } from "react";
+import { CSSProperties, ReactNode } from "react";
+import { color } from "../logic/theme/color";
+import { border, isExist, setPx } from "../logic/theme/property";
 
 interface LayerPaneArgs {
-  width: number;
-  height: number;
+  w?: number;
+  h?: number;
+  flowY?: boolean;
+  style?: CSSProperties;
+  className?: string;
+  direction?: "row" | "column";
   children?: ReactNode;
+  justify?: string;
+  ali?: string;
+  r?: number;
 }
 
 export function LayerPane(options: LayerPaneArgs) {
-  const style = {
-    container: {
-      backgroundColor: "#2d2d2d",
-      width: options.width + "px",
-      height: options.height + "px",
-      border: '0.5px solid #484848'
-    },
+  const style: CSSProperties = {
+    width: setPx(options.w as number),
+    height: setPx(options.h as number),
+    flexDirection: isExist(options.direction, "row"),
+    border: border(color.primaryHalf),
+    borderRadius: isExist(options.r, 0),
+    overflowY: options.flowY ? "scroll" : "hidden",
+    backgroundColor: color.primary,
+    boxSizing: "border-box",
+    display: "flex",
+    alignItems: isExist(options.ali, "center"),
+    justifyContent: isExist(options.justify, "center"),
+    overflowX: "hidden",
+    ...options.style,
   };
 
-  return <div style={style.container}>{options.children}</div>;
+  return (
+    <div style={style} className={options.className}>
+      {options.children}
+    </div>
+  );
 }

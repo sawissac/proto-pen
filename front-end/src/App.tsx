@@ -1,65 +1,77 @@
 import "./App.css";
-import { useEffect, useRef, useState } from "react";
-import { Screen } from "./logic/detection";
-import { LayerPane } from "./component/LayerPane";
-import { Ui } from "./logic/UiDefaultValue";
-import { MoveUtil, ScreenBoundaryDetection } from "@wauxstudio/element-move-js";
-import { MainScreenPane } from "./component/MainScreen";
-import { TestBox } from "./component/TestBox";
+import { useEffect, useRef } from "react";
+import { ScreenDetection } from "./logic/screen_detection";
+import { ActionPane } from "./component/ActionPane";
+import { ScreenPane } from "./component/htmlCanvasPane/ScreenPane";
+import { NewElementTool } from "./component/tools/NewElementTool";
+import { ElementControlPane } from "./component/ElementControlPane";
+import { LocationTool } from "./component/tools/LocationTool";
+import { current } from "./logic/proto_pen_method/proto_event";
+import { MoveTool } from "./component/tools/MoveTool";
+import { ArrangeTool } from "./component/tools/ArrangeTool";
+import { useAppDispatch, useAppSelector } from "./logic/redux-store/hooks";
+import { changeScreen } from "./logic/redux-store/feature/UserInterfaceSlice";
+import { PropertyTool } from "./component/tools/PropertyTool";
+import { GroupTool } from "./component/tools/GroupTool";
+import {
+  disableWheelEvent,
+  removeDisableWheelEvent,
+} from "./logic/disableEvent";
 
-const screen = new Screen();
+const screenDetection = new ScreenDetection();
 
 function App() {
-  const mainScreenRef = useRef(null);
-  const moveBoxRef = useRef(null);
+  const ToolRedux = useAppSelector((state) => state.tool);
+  const dispatch = useAppDispatch();
 
-  const [scrProp, setScrProp] = useState({
-    width: screen.getWidth(),
-    height: screen.getHeight(),
-  });
+  const appInterfaceRef = useRef(null);
+  const canvasRef = useRef(null);
 
-  // for Screen responsive
+  //! for Screen responsive
   useEffect(() => {
-    screen.listen((props) => {
-      setScrProp((i) => {
-        return {
-          ...i,
-          ...props,
-        };
-      });
-    });
+    const appInterface = current(appInterfaceRef);
 
-    const { boundary, detection } = ScreenBoundaryDetection(
-      mainScreenRef.current as unknown as HTMLElement
-    );
-    const moveUtil = new MoveUtil({
-      el: moveBoxRef.current as unknown as HTMLElement,
-      boundary: boundary,
-      detection: detection,
-      pushBackDistance: 2,
+    function getScreenSize() {
+      dispatch(
+        changeScreen({
+          screen: screenDetection.getBoth(),
+        })
+      );
+    }
+    getScreenSize();
+
+    disableWheelEvent(appInterface);
+    screenDetection.listener(() => {
+      getScreenSize();
     });
 
     return () => {
-      moveUtil.closeEvent();
-      screen.closeEvent();
+      removeDisableWheelEvent(appInterface);
+      screenDetection.closeEvent();
     };
   }, []);
 
   return (
-    <div className="App">
-      <LayerPane height={scrProp.height} width={Ui.layerPane.width}></LayerPane>
-      <MainScreenPane
-        ref={mainScreenRef}
-        width={scrProp.width}
-        height={scrProp.height}
-      >
-        <TestBox ref={moveBoxRef} />
-      </MainScreenPane>
-      <LayerPane
-        height={scrProp.height}
-        width={Ui.ActionLayerPane.width}
-      ></LayerPane>
-      <LayerPane height={scrProp.height} width={Ui.layerPane.width}></LayerPane>
+    <div ref={appInterfaceRef} className="App">
+      <ElementControlPane />
+      <ScreenPane ref={canvasRef} />
+      <ActionPane />
+      {ToolRedux.newElementTool.state ? (
+        <NewElementTool parent={appInterfaceRef} />
+      ) : null}
+      {ToolRedux.locationTool.state ? (
+        <LocationTool parent={appInterfaceRef} canvas={canvasRef} />
+      ) : null}
+      {ToolRedux.moveTool.state ? <MoveTool parent={appInterfaceRef} /> : null}
+      {ToolRedux.arrangeTool.state ? (
+        <ArrangeTool parent={appInterfaceRef} />
+      ) : null}
+      {ToolRedux.propertyTool.state ? (
+        <PropertyTool parent={appInterfaceRef} />
+      ) : null}
+      {ToolRedux.groupTool.state ? (
+        <GroupTool parent={appInterfaceRef} />
+      ) : null}
     </div>
   );
 }
