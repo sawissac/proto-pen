@@ -18,11 +18,9 @@ import {
   deleteMarkLocation,
   setMarkLocation,
 } from "../../logic/redux-store/feature/MarkLocationSlice";
-import {
-  Divider,
-  MessageDialogBox,
-  Title,
-} from "../io-component/MessageDialogBox";
+import { Divider, ToolBox, Title } from "../io-component/ToolBox";
+import Description from "../io-component/Description";
+import { setMessage } from "../../logic/redux-store/feature/UserInterfaceSlice";
 
 interface LocationDialogArgs {
   parent: any;
@@ -110,23 +108,39 @@ export function LocationTool(options: LocationDialogArgs) {
 
   function markLocationHandler() {
     const name = input.name;
-    dispatch(
-      setMarkLocation({
-        name,
-        x: input.x,
-        y: input.y,
-      })
-    );
+
+    if (name) {
+      dispatch(
+        setMessage({
+          type: "success",
+          message: `Success: Location ${input.name} marked at ${input.x}, ${input.y}`,
+        })
+      );
+      dispatch(
+        setMarkLocation({
+          name,
+          x: input.x,
+          y: input.y,
+        })
+      );
+    } else {
+      dispatch(
+        setMessage({
+          type: "warning",
+          message: `Fail: mark name can't be empty!`,
+        })
+      );
+    }
   }
 
   return (
-    <MessageDialogBox ref={toolRef} h={326}>
+    <ToolBox ref={toolRef} h={326}>
       <Title value="Location" txtAli="center" />
       <Divider />
       <FieldWarper justify="space-between" py={10} px={15}>
         <InputField
           type="number"
-          title="location-x-input"
+          title="Location x input"
           label="X"
           value={input.x}
           placeHolder="100..."
@@ -138,7 +152,7 @@ export function LocationTool(options: LocationDialogArgs) {
         />
         <InputField
           type="number"
-          title="location-y-input"
+          title="Location y input"
           label="Y"
           value={input.y}
           placeHolder="100..."
@@ -150,7 +164,7 @@ export function LocationTool(options: LocationDialogArgs) {
         />
         <InputField
           type="text"
-          title="location-name-input"
+          title="Location name input"
           label="N"
           value={input.name}
           placeHolder="L1..."
@@ -164,22 +178,22 @@ export function LocationTool(options: LocationDialogArgs) {
       <FieldWarper direction="column" px={16} py={1}>
         <Button.Click
           r={7}
-          style={{ width: "100%", height: "35px" }}
+          h={35}
+          style={{ width: "100%" }}
           listener={markLocationHandler}
         >
           <IconMapPin size={13} color="white" /> Mark
         </Button.Click>
         <LayerPane
           r={7}
+          h={100}
           flowY={true}
           direction="column"
-          h={100}
+          justify="flex-start"
           className={CustomStyle.protoPenScrollbarPrimary}
           style={{
             margin: "5px 0",
             width: "100%",
-            border: "1px solid #3d3d3d",
-            borderRadius: "7px",
           }}
         >
           {markLocationList.length ? (
@@ -191,7 +205,7 @@ export function LocationTool(options: LocationDialogArgs) {
               }}
             />
           ) : (
-            <NoLocationMarked />
+            <Description value="No location Marked!" h={110} />
           )}
         </LayerPane>
       </FieldWarper>
@@ -199,34 +213,22 @@ export function LocationTool(options: LocationDialogArgs) {
       <FieldWarper direction="column" px={16} py={1}>
         <Button.Click
           r={7}
-          style={{ width: "100%", height: "35px", marginTop: "5px" }}
+          h={35}
+          style={{ width: "100%", marginTop: "5px" }}
           listener={goLocationHandler}
         >
           Go to {`${input.x},${input.y}`}
         </Button.Click>
         <Button.Click
           r={7}
-          style={{ width: "100%", height: "35px", marginTop: "5px" }}
+          h={35}
+          style={{ width: "100%", marginTop: "5px" }}
           listener={canvasCenterHandler}
         >
           Canvas Center
         </Button.Click>
       </FieldWarper>
-    </MessageDialogBox>
-  );
-}
-
-function NoLocationMarked() {
-  return (
-    <Button.Click
-      style={{
-        width: "100%",
-        height: "100%",
-        backgroundColor: color.primary,
-      }}
-    >
-      No location Marked!
-    </Button.Click>
+    </ToolBox>
   );
 }
 
@@ -253,7 +255,7 @@ function LocationList(options: LocationListArgs) {
     <>
       {locationList.map((i, index) => {
         return (
-          <FieldWarper direction="row" style={{ width: "100%" }} key={index}>
+          <FieldWarper key={index} direction="row" style={{ width: "100%" }}>
             <Button.Click w={180} h={25} r={7} style={style}>
               {i.name}
             </Button.Click>
@@ -263,7 +265,7 @@ function LocationList(options: LocationListArgs) {
               r={7}
               style={style}
               listener={() => {
-                const canvas = options.canvas.current as unknown as HTMLElement;
+                const canvas = current(options.canvas);
                 canvas.scrollTo({
                   behavior: "smooth",
                   top: i.y,

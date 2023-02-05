@@ -6,6 +6,7 @@ interface DescriptionInterface {
   w?: number | string;
   h?: number | string;
   border?: boolean;
+  style?: React.CSSProperties;
 }
 
 export default function Description(options: DescriptionInterface) {
@@ -19,7 +20,8 @@ export default function Description(options: DescriptionInterface) {
         fontSize: "14px",
         display: "grid",
         placeItems: "center",
-        padding: "10px 16px"
+        padding: "10px 16px",
+        ...options.style,
       }}
     >
       {options.value}

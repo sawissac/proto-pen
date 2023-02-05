@@ -1,8 +1,10 @@
-import { LayerPane } from "./LayerPane";
 import CustomStyles from "../custom.module.css";
+import { LayerPane } from "./LayerPane";
 import { useAppDispatch, useAppSelector } from "../logic/redux-store/hooks";
 import { setActiveElement } from "../logic/redux-store/feature/ElementObjectSlice";
 import { Button } from "./io-component/Button";
+import { background } from "../logic/theme/property";
+import { SelectDataEnum } from "./tools/PropertyTool";
 
 export function ElementControlPane() {
   const userInterfaceRedux = useAppSelector((state) => state.userInterface);
@@ -10,9 +12,10 @@ export function ElementControlPane() {
   const dispatch = useAppDispatch();
 
   const selectedElementList = elementObjectRedux.selectedElement;
-  const elementList = Object.values(elementObjectRedux.elementObjectData);
+  const elementList = Object.values(elementObjectRedux.elementObjectData).filter(i => i.type !== SelectDataEnum.nm);
   const activeElement = elementObjectRedux.activeElement;
   const selectedElement = new Set(selectedElementList);
+  
   return (
     <LayerPane
       className={CustomStyles.protoPenScrollbarPrimary}
@@ -29,12 +32,10 @@ export function ElementControlPane() {
             h={35}
             style={{
               width: "100%",
-              backgroundColor:
-                activeElement === i.name
-                  ? "#2183e9"
-                  : selectedElement.has(i.name)
-                  ? "#8521e9"
-                  : "transparent",
+              backgroundColor: background(
+                activeElement === i.name,
+                selectedElement.has(i.name)
+              ),
             }}
             listener={() => {
               dispatch(setActiveElement(i.name));

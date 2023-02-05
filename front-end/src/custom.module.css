@@ -17,7 +17,6 @@
   /* roundness of the scroll thumb */
 }
 
-
 .protoPenScrollbarPrimary::-webkit-scrollbar {
   width: 15px;
   height: 15px;
@@ -26,6 +25,8 @@
 
 .protoPenScrollbarPrimary::-webkit-scrollbar-track {
   background: #141414;
+  border-top-right-radius: 7px;
+  border-bottom-right-radius: 7px;
   /* color of the tracking area */
 }
 
@@ -43,18 +44,22 @@
   background-size: 22px 22px;
 }
 
-.btnPrimary{
+.btnPrimary {
   background-color: #2d2d2d;
 }
 
-.btnPrimary:hover{
+.btnPrimary:hover {
   background-color: #454545;
 }
 
-.btnSecondary{
+.btnSecondary {
   background-color: #2183e9;
 }
 
-.btnSecondary:hover{
+.btnSecondary:hover {
   background-color: #2183e9;
+}
+
+.placeHolder::placeholder{
+  color: white;
 }

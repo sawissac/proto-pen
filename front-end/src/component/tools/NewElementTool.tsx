@@ -3,17 +3,13 @@ import { FieldWarper, InputField } from "../io-component/InputField";
 import { Button } from "../io-component/Button";
 import { useMoveUtilForTool } from "../../logic/hooks/ToolMoveHook";
 import { useAppDispatch, useAppSelector } from "../../logic/redux-store/hooks";
-import { changeToolsPos } from "../../logic/redux-store/feature/ToolSlice";
+import { changeToolsPos} from "../../logic/redux-store/feature/ToolSlice";
+import { Divider, ToolBox, Title } from "../io-component/ToolBox";
+import { setMessage } from "../../logic/redux-store/feature/UserInterfaceSlice";
 import {
   createElementObject,
   setActiveElement,
 } from "../../logic/redux-store/feature/ElementObjectSlice";
-import {
-  Divider,
-  MessageDialogBox,
-  Title,
-} from "../io-component/MessageDialogBox";
-
 interface NewLayerDialogArgs {
   parent: any;
 }
@@ -34,16 +30,31 @@ export function NewElementTool(options: NewLayerDialogArgs) {
   const [input, setInput] = React.useState(DefaultInput);
 
   const createElementHandler = () => {
-    dispatch(setActiveElement(""));
-    dispatch(
-      createElementObject({
-        uid: elObjRedux.uniqueId,
-        w: input.w,
-        h: input.h,
-        times: input.t,
-        a: uiRedux.canvasSpaceSize,
-      })
-    );
+    if (input.w === 0 || input.h === 0 || input.t === 0) {
+      dispatch(
+        setMessage({
+          type: "warning",
+          message: "Width, Height and times value should be above zero!",
+        })
+      );
+    } else {
+      dispatch(setActiveElement(""));
+      dispatch(
+        setMessage({
+          type: "success",
+          message: `${input.t} Element Created!`,
+        })
+      );
+      dispatch(
+        createElementObject({
+          uid: elObjRedux.uniqueId,
+          w: input.w,
+          h: input.h,
+          times: input.t,
+          a: uiRedux.canvasSpaceSize,
+        })
+      );
+    }
   };
 
   useMoveUtilForTool(
@@ -56,13 +67,13 @@ export function NewElementTool(options: NewLayerDialogArgs) {
   );
 
   return (
-    <MessageDialogBox ref={toolRef} h={140}>
+    <ToolBox ref={toolRef} h={140}>
       <Title value="New Element Tool" txtAli="center" />
       <Divider />
       <FieldWarper justify="space-between" py={10} px={15}>
         <InputField
           type="number"
-          title="element-width-input"
+          title="Element width input"
           label="W"
           value={input.w}
           placeHolder="100..."
@@ -74,7 +85,7 @@ export function NewElementTool(options: NewLayerDialogArgs) {
         />
         <InputField
           type="number"
-          title="element-height-input"
+          title="Element height input"
           label="H"
           value={input.h}
           placeHolder="100..."
@@ -86,7 +97,7 @@ export function NewElementTool(options: NewLayerDialogArgs) {
         />
         <InputField
           type="number"
-          title="element-times-input"
+          title="Element times input"
           label="&times;"
           value={input.t}
           placeHolder="1x..."
@@ -99,6 +110,7 @@ export function NewElementTool(options: NewLayerDialogArgs) {
       </FieldWarper>
       <FieldWarper px={16} py={1}>
         <Button.Click
+          title="Create new element"
           h={35}
           r={7}
           style={{ flex: 1 }}
@@ -107,6 +119,6 @@ export function NewElementTool(options: NewLayerDialogArgs) {
           CREATE
         </Button.Click>
       </FieldWarper>
-    </MessageDialogBox>
+    </ToolBox>
   );
 }

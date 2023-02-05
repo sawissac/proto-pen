@@ -17,6 +17,9 @@ import {
   disableWheelEvent,
   removeDisableWheelEvent,
 } from "./logic/disableEvent";
+import MessageDialog from "./component/MessageDialog";
+import { setActiveElement, setSelectedElement } from "./logic/redux-store/feature/ElementObjectSlice";
+import { ElementPropertyPane } from "./component/PropertyPane/ElementPropertyPane";
 
 const screenDetection = new ScreenDetection();
 
@@ -45,6 +48,12 @@ function App() {
       getScreenSize();
     });
 
+    document.addEventListener("contextmenu", function(e){
+      e.preventDefault();
+      dispatch(setActiveElement(""));
+      dispatch(setSelectedElement([]))
+    }, false);
+
     return () => {
       removeDisableWheelEvent(appInterface);
       screenDetection.closeEvent();
@@ -56,6 +65,7 @@ function App() {
       <ElementControlPane />
       <ScreenPane ref={canvasRef} />
       <ActionPane />
+      <ElementPropertyPane />
       {ToolRedux.newElementTool.state ? (
         <NewElementTool parent={appInterfaceRef} />
       ) : null}
@@ -72,6 +82,7 @@ function App() {
       {ToolRedux.groupTool.state ? (
         <GroupTool parent={appInterfaceRef} />
       ) : null}
+      <MessageDialog />
     </div>
   );
 }

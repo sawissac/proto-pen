@@ -2,15 +2,15 @@ import React from "react";
 import { FieldWarper } from "../io-component/InputField";
 import { Button } from "../io-component/Button";
 import { useMoveUtilForTool } from "../../logic/hooks/ToolMoveHook";
-import _ from "lodash";
 import { useAppDispatch, useAppSelector } from "../../logic/redux-store/hooks";
 import { changeToolsPos } from "../../logic/redux-store/feature/ToolSlice";
 import { groupToActiveElement } from "../../logic/redux-store/feature/ElementObjectSlice";
 import {
   Divider,
-  MessageDialogBox,
+  ToolBox,
   Title,
-} from "../io-component/MessageDialogBox";
+} from "../io-component/ToolBox";
+import { setMessage } from "../../logic/redux-store/feature/UserInterfaceSlice";
 
 interface NewLayerDialogArgs {
   parent: any;
@@ -18,11 +18,35 @@ interface NewLayerDialogArgs {
 
 export function GroupTool(options: NewLayerDialogArgs) {
   const toolRedux = useAppSelector((state) => state.tool);
+  const elo = useAppSelector(state=>state.elementObject)
   const dispatch = useAppDispatch();
   const dialogRef = React.useRef(null);
 
   const groupHandler = () => {
-    dispatch(groupToActiveElement());
+    const activeElement = elo.activeElement; 
+    const activeElementCssSharedChild = elo.elementObjectData[activeElement].cssSharedChild;
+    const selectedElement = elo.selectedElement;
+    const has = ()=>{
+      let flag = false;
+      selectedElement.map(i=>{
+        let isExit = Object.hasOwn(activeElementCssSharedChild, i);
+        if(isExit){
+          flag = true;
+        }
+      })
+      return flag;
+    }
+
+    if(has()){
+      dispatch(
+        setMessage({
+          type: "warning",
+          message: "Fail: Element is already grouped"
+        })
+      )
+    }else{
+      dispatch(groupToActiveElement());
+    }
   };
 
   useMoveUtilForTool(
@@ -35,7 +59,7 @@ export function GroupTool(options: NewLayerDialogArgs) {
   );
 
   return (
-    <MessageDialogBox ref={dialogRef} h={140}>
+    <ToolBox ref={dialogRef} h={140}>
       <Title value="Group Tool" txtAli="center" />
       <Divider />
       <FieldWarper>
@@ -56,6 +80,6 @@ export function GroupTool(options: NewLayerDialogArgs) {
           Group
         </Button.Click>
       </FieldWarper>
-    </MessageDialogBox>
+    </ToolBox>
   );
 }

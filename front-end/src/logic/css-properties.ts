@@ -192,24 +192,6 @@ export const CssProperty:any = {
             "inherit"
         ]
     },
-    "background": {
-        "moz": false,
-        "webkit": false,
-        "syntax": "(([prop:background-color]) ([prop:background-image]) ((([prop:background-position])|([prop:background-size]))) ([prop:background-repeat]) ([prop:background-origin]) ([prop:background-clip]) ([prop:background-attachment]))|(initial)|(inherit)",
-        "initial": "see individual properties",
-        "values": [
-            "[prop:background-color]",
-            "[prop:background-image]",
-            "[prop:background-position]",
-            "[prop:background-size]",
-            "[prop:background-repeat]",
-            "[prop:background-origin]",
-            "[prop:background-clip]",
-            "[prop:background-attachment]",
-            "initial",
-            "inherit"
-        ]
-    },
     "background-attachment": {
         "moz": false,
         "webkit": false,

@@ -24,10 +24,10 @@ export function LayerPane(options: LayerPaneArgs) {
     borderRadius: isExist(options.r, 0),
     overflowY: options.flowY ? "scroll" : "hidden",
     backgroundColor: color.primary,
-    boxSizing: "border-box",
-    display: "flex",
     alignItems: isExist(options.ali, "center"),
     justifyContent: isExist(options.justify, "center"),
+    boxSizing: "border-box",
+    display: "flex",
     overflowX: "hidden",
     ...options.style,
   };

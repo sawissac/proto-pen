@@ -18,8 +18,16 @@ export const isExist = (target: any, replace: any) => {
 
 export const boxShadow = (active: boolean, selected: boolean) => {
   return active
-    ? `0px 0px 0px 2px ${color.secondary},${color.shadow} 0px 4px 8px 2px`
+    ? `0px 0px 0px 2px ${color.white},0px 0px 0px 4px ${color.secondary}`
     : selected
-    ? `0px 0px 0px 2px ${color.purple},${color.shadow} 0px 4px 8px 2px`
-    : `${color.shadow} 0px 4px 8px 2px`;
+    ? `0px 0px 0px 2px ${color.white},0px 0px 0px 4px ${color.purple}`
+    : `none`;
+};
+
+export const background = (active: boolean, selected: boolean) => {
+  return active ? color.secondary : selected ? color.purple : color.primary;
+};
+
+export const _if = (value: any, meet: any, trueV: any, falseV: any) => {
+  return value === meet ? trueV : falseV;
 };

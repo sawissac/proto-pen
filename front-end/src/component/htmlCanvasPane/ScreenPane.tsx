@@ -1,54 +1,59 @@
-import React, { CSSProperties, forwardRef, useEffect, useRef } from "react";
+import React from "react";
 import CustomStyle from "../../custom.module.css";
-import {
-  current,
-  listener,
-  removeListener,
-} from "../../logic/proto_pen_method/proto_event";
-import { math_half } from "../../logic/proto_pen_method/proto_math";
 import { useAppDispatch, useAppSelector } from "../../logic/redux-store/hooks";
 import { changeToolsPos } from "../../logic/redux-store/feature/ToolSlice";
-import {
-  setActiveElement,
-  setActiveElementPos,
-  setSelectedElement,
-} from "../../logic/redux-store/feature/ElementObjectSlice";
 import { setCursorSelectArea } from "../../logic/redux-store/feature/UserInterfaceSlice";
 import { ProtoPenElement } from "../../logic/proto_pen_method/proto_create_element";
-import { NodeModel } from "./NodeModel";
 import { Pin } from "./Pin";
 import { boxShadow } from "../../logic/theme/property";
 import { SelectScreenBox } from "./SelectScreenBox";
 import { RecursiveElement } from "./RecursiveElement";
 import { MoveElement } from "./MoveElement";
+import { color } from "../../logic/theme/color";
+import {
+  current,
+  listener,
+  removeListener,
+} from "../../logic/proto_pen_method/proto_event";
+import {
+  setActiveElement,
+  setSelectedElement,
+} from "../../logic/redux-store/feature/ElementObjectSlice";
+import {
+  math_extract,
+  math_half,
+} from "../../logic/proto_pen_method/proto_math";
+import { SelectDataEnum } from "../tools/PropertyTool";
 
 export const ScreenPane = React.forwardRef((options: any, canvasRef: any) => {
   const toolRedux = useAppSelector((state) => state.tool);
   const userInterfaceRedux = useAppSelector((state) => state.userInterface);
   const elementObjectRedux = useAppSelector((state) => state.elementObject);
   const dispatch = useAppDispatch();
+  const [scale, setScale] = React.useState(1);
+  const canvasSpaceRef = React.useRef(null);
+  const selectBoxRef = React.useRef(null);
+  const pinRef = React.useRef(null);
 
-  const canvasSpaceRef = useRef(null);
-  const selectBoxRef = useRef(null);
-  const pinRef = useRef(null);
-
-  const styles: { [options: string]: CSSProperties } = {
+  const styles: { [options: string]: React.CSSProperties } = {
     canvas: {
       width: userInterfaceRedux.canvasWidth + "px",
-      height: userInterfaceRedux.screen.height + "px",
-      backgroundColor: "#ffffff",
+      height: userInterfaceRedux.screen.height - 30 + "px",
+      backgroundColor: color.white,
       overflow: "scroll",
       position: "relative",
     },
     canvasSpace: {
-      width: `${userInterfaceRedux.canvasSpaceSize}px`,
-      height: `${userInterfaceRedux.canvasSpaceSize}px`,
+      scale: "1",
+      userSelect: "none",
+      width: userInterfaceRedux.canvasSpaceSize + "px",
+      height: userInterfaceRedux.canvasSpaceSize + "px",
       position: "relative",
     },
   };
 
   //! canvas Scroll
-  useEffect(() => {
+  React.useEffect(() => {
     const canvas = current(canvasRef);
     const canvasSpaceSize = math_half(userInterfaceRedux.canvasSpaceSize);
     const screenWidth = math_half(userInterfaceRedux.canvasWidth);
@@ -56,13 +61,13 @@ export const ScreenPane = React.forwardRef((options: any, canvasRef: any) => {
 
     canvas.scrollTo({
       behavior: "smooth",
-      top: canvasSpaceSize - screenHeight,
-      left: canvasSpaceSize - screenWidth,
+      top: math_extract(canvasSpaceSize, screenHeight),
+      left: math_extract(canvasSpaceSize, screenWidth),
     });
   }, [userInterfaceRedux.screen.width]);
 
   //! pointer select
-  useEffect(() => {
+  React.useEffect(() => {
     let currentOffset = { x: 0, y: 0 };
     let preOffset = { x: 0, y: 0 };
     let offset = { x: 0, y: 0, dx: 0, dy: 0 };
@@ -165,6 +170,7 @@ export const ScreenPane = React.forwardRef((options: any, canvasRef: any) => {
       currentOffset = { x: 0, y: 0 };
       isDrag = false;
     }
+
     function mouseClickHandler(ev: MouseEvent) {
       if (ev.ctrlKey) {
         dispatch(
@@ -195,7 +201,7 @@ export const ScreenPane = React.forwardRef((options: any, canvasRef: any) => {
   }, [userInterfaceRedux.handMove]);
 
   //! canvas hand move
-  useEffect(() => {
+  React.useEffect(() => {
     let canvas = current(canvasRef);
     let canvasSpace = current(canvasSpaceRef);
     let isDrag = false;
@@ -215,6 +221,20 @@ export const ScreenPane = React.forwardRef((options: any, canvasRef: any) => {
       }
     }
 
+    function wheelHandler(ev: any) {
+      ev.preventDefault();
+      if (userInterfaceRedux.handMove) {
+        if (ev.deltaY > 0) {
+          canvasSpace.style.scale = String(scale);
+          if (scale > 0.5) setScale((i) => i - 0.1);
+        } else {
+          canvasSpace.style.scale = String(scale);
+          setScale((i) => i + 0.1);
+        }
+      }
+    }
+
+    listener("wheel", canvasSpace, wheelHandler);
     listener("mousemove", canvasSpace, mouseMoveHandler);
     listener("mousedown", canvasSpace, mouseDownHandler);
     listener("mouseup", canvasSpace, mouseUpHandler);
@@ -223,11 +243,12 @@ export const ScreenPane = React.forwardRef((options: any, canvasRef: any) => {
       removeListener("mousemove", canvasSpace, mouseMoveHandler);
       removeListener("mousedown", canvasSpace, mouseDownHandler);
       removeListener("mouseup", canvasSpace, mouseUpHandler);
+      removeListener("wheel", canvasSpace, wheelHandler);
     };
-  }, [userInterfaceRedux.handMove]);
+  }, [userInterfaceRedux.handMove, scale]);
 
   //! add selected element
-  useEffect(() => {
+  React.useEffect(() => {
     let elementArr: any = Object.values(elementObjectRedux.elementObjectData);
     let activeElement = elementObjectRedux.activeElement;
     let result = elementArr
@@ -245,12 +266,13 @@ export const ScreenPane = React.forwardRef((options: any, canvasRef: any) => {
   }, [userInterfaceRedux.cursorSelectArea]);
 
   const selectedElementList = new Set(elementObjectRedux.selectedElement);
-  const listOfElement = Object.values(elementObjectRedux.elementObjectData);
   const activeElement = elementObjectRedux.activeElement;
+  const listOfElement = Object.values(elementObjectRedux.elementObjectData).filter(i => i.type !== SelectDataEnum.nm);
 
   const normalElements = listOfElement.filter(
     (i) => i.relationship.status === false
   );
+
   const relationshipElements = listOfElement.filter(
     (i) => i.relationship.status === true
   );
@@ -286,12 +308,13 @@ export const ScreenPane = React.forwardRef((options: any, canvasRef: any) => {
                   selectedElementList.has(data.name)
                 ),
               }}
-              onClick={() => {
+              listener={() => {
                 dispatch(setActiveElement(data.name));
               }}
             />
           );
         })}
+
         {relationshipElements.map((data: ProtoPenElement, index) => {
           return (
             <MoveElement
@@ -304,7 +327,7 @@ export const ScreenPane = React.forwardRef((options: any, canvasRef: any) => {
                   selectedElementList.has(data.name)
                 ),
               }}
-              onClick={() => {
+              listener={() => {
                 dispatch(setActiveElement(data.name));
               }}
             >
@@ -318,6 +341,3 @@ export const ScreenPane = React.forwardRef((options: any, canvasRef: any) => {
     </div>
   );
 });
-
-
-

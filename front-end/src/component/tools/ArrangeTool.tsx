@@ -1,9 +1,9 @@
 import React from "react";
 import {
   Divider,
-  MessageDialogBox,
+  ToolBox,
   Title,
-} from "../io-component/MessageDialogBox";
+} from "../io-component/ToolBox";
 import { FieldWarper, InputField } from "../io-component/InputField";
 import { Button } from "../io-component/Button";
 import { useMoveUtilForTool } from "../../logic/hooks/ToolMoveHook";
@@ -45,7 +45,7 @@ export function ArrangeTool(options: NewLayerDialogArgs) {
   );
 
   return (
-    <MessageDialogBox ref={toolRef} h={175}>
+    <ToolBox ref={toolRef} h={175}>
       <Title value="Arrange Tool" txtAli="center" />
       <Divider />
       <FieldWarper>
@@ -58,7 +58,7 @@ export function ArrangeTool(options: NewLayerDialogArgs) {
         <InputField
           type="number"
           title="arrange-row-input-dialog"
-          label="Columns"
+          label="C"
           value={input.c}
           placeHolder="5..."
           onChange={(ev: any) => {
@@ -70,7 +70,7 @@ export function ArrangeTool(options: NewLayerDialogArgs) {
         <InputField
           type="number"
           title="arrange-row-input-dialog"
-          label="Gap"
+          label="G"
           value={input.g}
           placeHolder="5..."
           iMrL={7}
@@ -93,6 +93,6 @@ export function ArrangeTool(options: NewLayerDialogArgs) {
           Arrange
         </Button.Click>
       </FieldWarper>
-    </MessageDialogBox>
+    </ToolBox>
   );
 }

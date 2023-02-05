@@ -41,11 +41,71 @@ function Toggle(options: ProtoPenButtonInterface) {
       title={isExist(options.title, "toggle-button")}
       style={btnStyle}
       onClick={() => {
-        setToggle((state) => !state);
+        setToggle((state: any) => !state);
       }}
     >
       {options.children}
     </button>
+  );
+}
+
+interface DoubleClickInputInterface {
+  onChange?: any;
+  inputPlaceHolder?: string;
+}
+function DoubleClickInput(
+  options: ProtoPenButtonInterface & DoubleClickInputInterface
+) {
+  const [input, setInput] = React.useState("");
+  const [isDouble, setIsDouble] = React.useState(false);
+
+  const btnStyle = {
+    ...generateButtonTheme(
+      options.w as number,
+      options.h as number,
+      options.r as number,
+      options.px as number,
+      options.py as number
+    ),
+    backgroundColor: options.primary ? color.primary : color.secondary,
+    ...options.style,
+  };
+
+  return (
+    <>
+      {isDouble ? (
+        <input
+          type={"text"}
+          title={isExist(options.title, "click-button")}
+          value={input}
+          style={{...btnStyle, backgroundColor: color.purple}}
+          className={options.className}
+          placeholder={isExist(options.inputPlaceHolder, "place holder")}
+          onChange={(ev) => {
+            setInput(ev.target.value);
+          }}
+          onKeyDown={(ev) => {
+            if (ev.key === "Enter") {
+              options.onChange(input);
+              setIsDouble(false);
+            }
+          }}
+        />
+      ) : (
+        <button
+          type="button"
+          title={isExist(options.title, "click-button")}
+          style={btnStyle}
+          className={options.className}
+          onClick={options.listener}
+          onDoubleClick={() => {
+            setIsDouble(true);
+          }}
+        >
+          {options.children}
+        </button>
+      )}
+    </>
   );
 }
 
@@ -98,7 +158,7 @@ function Label(options: ProtoPenButtonInterface & LabelInterface) {
     height: "max-content",
     textAlign: "center",
     fontSize: "14px",
-    fontWeight: "bold"
+    fontWeight: "bold",
   };
 
   return (
@@ -124,4 +184,5 @@ export const Button = {
   Toggle: React.memo(Toggle),
   Click: React.memo(Click),
   Label: React.memo(Label),
+  DoubleClickInput: React.memo(DoubleClickInput),
 };

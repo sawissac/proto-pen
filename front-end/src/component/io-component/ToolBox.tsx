@@ -8,7 +8,7 @@ interface MessageDialogBoxArgs {
   children?: React.ReactNode;
 }
 
-export const MessageDialogBox = React.forwardRef(
+export const ToolBox = React.forwardRef(
   (options: MessageDialogBoxArgs, ref: any) => {
     const styles: React.CSSProperties = {
       height: setPx(options.h as number),
@@ -43,6 +43,7 @@ export function Title(options: TitleArgs) {
     color: color.white,
     padding: setPad(options.px as number, options.py as number),
     textAlign: options.txtAli ? options.txtAli : "center",
+    width: "100%"
   };
   return <h5 style={style}>{options.value}</h5>;
 }

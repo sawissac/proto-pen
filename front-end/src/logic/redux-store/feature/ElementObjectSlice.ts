@@ -6,10 +6,12 @@ import {
 import { math_half } from "../../proto_pen_method/proto_math";
 import { arrange } from "../../proto_pen_method/proto_arrange";
 import { CSSProperties } from "react";
+import { SelectDataEnum } from "../../../component/tools/PropertyTool";
 
 interface InitialState {
   uniqueId: number;
   activeElement: string;
+  activeNode: string;
   selectedElement: string[];
   elementObjectData: { [x: string]: ProtoPenElement };
 }
@@ -24,6 +26,7 @@ interface ElementObjectPosition {
 const initialState: InitialState = {
   uniqueId: 0,
   activeElement: "",
+  activeNode: "",
   selectedElement: [],
   elementObjectData: {},
 };
@@ -107,55 +110,175 @@ const elementObjectSlice = createSlice({
       };
     },
     deleteActiveSelect: (state) => {
-      const toDelete = [state.activeElement, ...state.selectedElement];
-      if (!state.activeElement) toDelete.shift();
+      const ave = state.activeElement;
+      const sle = state.selectedElement;
+      const elo = state.elementObjectData;
+      const toDelete = [ave, ...sle];
+
+      if (!ave) toDelete.shift();
 
       toDelete.map((i) => {
-        delete state.elementObjectData[i];
+        const { type, relationship, name, className } = elo[i];
+
+        //! delete class name
+        Object.keys(className).map((i) => {
+          delete elo[i].cssSharedChild[name];
+        });
+
+        //! if node model is deleted it will search it shared child and
+        //! delete it name in the child class name
+        if (type === SelectDataEnum.nm) {
+          const toDeleteCssSharedChild = Object.keys(elo[i].cssSharedChild);
+          toDeleteCssSharedChild.map((sharedChildName) => {
+            delete elo[sharedChildName].className[i];
+          });
+        }
+        //! if child is deleted, will look for parent and delete name in parent
+        relationship.parent.map((pi) => {
+          elo[pi].relationship.children = elo[pi].relationship.children.filter(
+            (fi) => fi !== name
+          );
+        });
+        //! if node model parent is deleted, will look for child and delete name in child
+        relationship.children.map((ci) => {
+          elo[ci].relationship.parent = elo[ci].relationship.parent.filter(
+            (fi) => fi !== name
+          );
+        });
+
+        delete elo[i];
+      });
+
+      const toRender = Object.keys(elo);
+
+      toRender.map((i) => {
+        const { relationship } = elo[i];
+        if (
+          relationship.children.length === 0 &&
+          relationship.parent.length === 0
+        ) {
+          relationship.status = false;
+        }
       });
     },
     setTextOfActiveObject: (state, action: PayloadAction<string>) => {
       state.elementObjectData[state.activeElement].text = action.payload;
     },
     setTypeOfActiveObject: (state, action: PayloadAction<string>) => {
+      if (SelectDataEnum.bm) {
+        state.elementObjectData[state.activeElement].w = 50;
+        state.elementObjectData[state.activeElement].h = 50;
+      }
       state.elementObjectData[state.activeElement].type = action.payload;
     },
     setWidthOfActiveObject: (
       state,
-      action: PayloadAction<{ w: number; h: number }>
+      action: PayloadAction<{ activeEl: string; w: number; h: number }>
     ) => {
-      if (state.activeElement) {
-        state.elementObjectData[state.activeElement].w = action.payload.w;
-        state.elementObjectData[state.activeElement].h = action.payload.h;
+      if (action.payload.activeEl) {
+        state.elementObjectData[action.payload.activeEl].w = action.payload.w;
+        state.elementObjectData[action.payload.activeEl].h = action.payload.h;
       }
     },
     groupToActiveElement: (state) => {
-      state.elementObjectData[state.activeElement].relationship.status = true;
-      state.elementObjectData[state.activeElement].relationship.children = [
-        ...state.elementObjectData[state.activeElement].relationship.children,
-        ...state.selectedElement,
-      ];
+      const elo = state.elementObjectData;
+      const sle = state.selectedElement.filter(
+        (i) => elo[i].type !== SelectDataEnum.nm
+      );
+
+      if (sle.length > 0) {
+        elo[state.activeElement].relationship.status = true;
+
+        elo[state.activeElement].relationship.children = [
+          ...elo[state.activeElement].relationship.children,
+          ...sle,
+        ];
+        sle.map((i) => {
+          elo[i].relationship.parent = [
+            ...elo[i].relationship.parent,
+            state.activeElement,
+          ];
+        });
+      }
     },
-    updateCssProps: (state, action: PayloadAction<{ css: CSSProperties }>) => {
-      state.elementObjectData[state.activeElement].css = action.payload.css;
+    //! node model part
+    updateCssProps: (
+      state,
+      action: PayloadAction<{ activeEl: any; css: CSSProperties }>
+    ) => {
+      state.elementObjectData[action.payload.activeEl].css = action.payload.css;
     },
     sharedCss: (
       state,
       action: PayloadAction<{
+        activeEl: any;
         cssSharedChild: any;
       }>
     ) => {
-      state.elementObjectData[state.activeElement].cssSharedChild =
+      state.elementObjectData[action.payload.activeEl].cssSharedChild =
         action.payload.cssSharedChild;
       const ele = Object.keys(action.payload.cssSharedChild);
+
       ele.map((i) => {
-        state.elementObjectData[i].className[state.activeElement] = "shared";
+        state.elementObjectData[i].className[action.payload.activeEl] =
+          "shared";
       });
     },
-    deleteActiveChild: (state, action: PayloadAction<{ae: string,child:string}>) => {
-      let child =
-        state.elementObjectData[action.payload.ae].relationship.children;
-      child = child.filter((i) => i !== action.payload.child);
+    disconnectCssSharedChild: (
+      state,
+      action: PayloadAction<{
+        activeEl: any;
+        deleteName: any;
+      }>
+    ) => {
+      const elo = state.elementObjectData;
+      const { deleteName, activeEl } = action.payload;
+      delete elo[activeEl].cssSharedChild[deleteName];
+      delete elo[deleteName].className[activeEl];
+    },
+    createNode: (state, action: PayloadAction<{ name: string }>) => {
+      let id = state.uniqueId;
+      let elo = state.elementObjectData;
+      let { name } = action.payload;
+      let eid = "eid-" + id;
+      elo[eid] = createProtoPenElement(eid, id, 0, 0, 0);
+      elo[eid].text = name;
+      elo[eid].type = SelectDataEnum.nm;
+      state.uniqueId = id + 1;
+    },
+    removeNode: (state, action: PayloadAction<string>) => {
+      const elementObjectData = state.elementObjectData;
+      const activeNode = action.payload;
+      const childToRemove = Object.keys(
+        elementObjectData[activeNode].cssSharedChild
+      );
+      childToRemove.map((sharedChildName) => {
+        delete elementObjectData[activeNode].cssSharedChild[sharedChildName];
+        delete elementObjectData[sharedChildName].className[activeNode];
+      });
+      delete elementObjectData[activeNode];
+    },
+    renameNode: (state, action: PayloadAction<string>) => {
+      state.elementObjectData[state.activeNode].text = action.payload;
+    },
+    setActiveNode: (state, action: PayloadAction<string>) => {
+      state.activeNode = action.payload;
+    },
+    duplicateNode: (state, action: PayloadAction<string>) => {
+      let id = state.uniqueId;
+      let elo = state.elementObjectData;
+      let activeElement = action.payload;
+      let name = "eid-" + id;
+
+      elo[name] = createProtoPenElement(name, id, 0, 0, 0);
+      elo[name].text = elo[activeElement].text + "- copy";
+      elo[name].css = elo[activeElement].css;
+      elo[name].cssSharedChild = {};
+      elo[name].type = SelectDataEnum.nm;
+      elo[name].position.x = elo[activeElement].position.x + 50;
+      elo[name].position.y = elo[activeElement].position.y + 50;
+
+      state.uniqueId = id + 1;
     },
   },
 });
@@ -174,6 +297,14 @@ export const {
   groupToActiveElement,
   updateCssProps,
   sharedCss,
-  deleteActiveChild
+  disconnectCssSharedChild,
+  setActiveNode,
+  createNode,
+  removeNode,
+  renameNode,
+  duplicateNode,
 } = elementObjectSlice.actions;
 export default elementObjectSlice.reducer;
+
+//! relationship
+function healRelationship(data: any) {}

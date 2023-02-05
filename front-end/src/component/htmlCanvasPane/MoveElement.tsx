@@ -1,10 +1,16 @@
-import React, { CSSProperties, useEffect, useRef } from "react";
+import React from "react";
 import { useAppDispatch, useAppSelector } from "../../logic/redux-store/hooks";
 import { ProtoPenElement } from "../../logic/proto_pen_method/proto_create_element";
-import { MoveUtil } from "@wauxstudio/element-move-js";
-import { current, listener, removeListener } from "../../logic/proto_pen_method/proto_event";
-import { setActiveElementPos } from "../../logic/redux-store/feature/ElementObjectSlice";
-import { NodeModel } from "./NodeModel";
+import {
+  setActiveElementPos,
+  setWidthOfActiveObject,
+} from "../../logic/redux-store/feature/ElementObjectSlice";
+import { _if, setPx } from "../../logic/theme/property";
+import { SelectDataEnum } from "../tools/PropertyTool";
+import { color } from "../../logic/theme/color";
+import { fetchCss } from "../../logic/proto_pen_method/proto_css_fetch";
+import { useMoveUtilForElementMove } from "../../logic/hooks/ElementMoveHook";
+import { current } from "../../logic/proto_pen_method/proto_event";
 
 interface MoveElementArgs {
   data: ProtoPenElement;
@@ -16,107 +22,90 @@ interface MoveElementArgs {
           clientHeight: number;
         };
       };
-  onClick: any;
+  listener: any;
   children?: any;
-  style?: CSSProperties;
+  style?: React.CSSProperties;
 }
 
 export function MoveElement(options: MoveElementArgs) {
-  const eod = useAppSelector((state) => {
-    return state.elementObject;
-  });
+  const elObjectRedux = useAppSelector((state) => state.elementObject);
   const dispatch = useAppDispatch();
-  const eleRef = useRef(null);
-  useEffect(() => {
-    let moveUtil: any = null;
-    let mouseUp: any = null;
-    let element: any = null;
-    if (eleRef.current && options.parent) {
-      element = current(eleRef);
-      moveUtil = new MoveUtil({
-        el: element,
-        boundary: options.parent.current,
-        pushBackDistance: 10,
-      } as any);
-      moveUtil.setPosition({
-        left: options.data.position.x,
-        top: options.data.position.y,
-      } as any);
+  const eleRef = React.useRef(null);
 
-      let elementPos = {
-        x: moveUtil.getX(),
-        y: moveUtil.getY(),
-        dx: 0,
-        dy: 0,
-      };
+  useMoveUtilForElementMove(
+    eleRef,
+    options.parent,
+    options.data.position,
+    setActiveElementPos,
+    options.data.name,
+    [eleRef, options.data.position.x]
+  );
 
-      moveUtil.listener(
-        (pos: { left: number; top: number; right: number; bottom: number }) => {
-          elementPos = {
-            x: pos.left,
-            y: pos.top,
-            dx: pos.right,
-            dy: pos.bottom,
-          };
-        }
+  React.useEffect(() => {
+    let element: any = current(eleRef);
+    let resizeObserver = new ResizeObserver(() => {
+      dispatch(
+        setWidthOfActiveObject({
+          activeEl: options.data.name,
+          w: current(eleRef).clientWidth,
+          h: current(eleRef).clientHeight,
+        })
       );
-
-      mouseUp = () => {
-        dispatch(
-          setActiveElementPos({
-            activeElement: options.data.name,
-            position: elementPos,
-          })
-        );
-      };
-      listener("mouseup", element, mouseUp);
-    }
-
+    });
+    resizeObserver.observe(element);
     return () => {
-      if (moveUtil) moveUtil.closeEvent();
-      if (element) {
-        removeListener("mouseup", element, mouseUp);
-      }
+      resizeObserver.unobserve(element);
     };
-  }, [eleRef, options.data.position.x]);
+  }, [eleRef]);
 
-  let getCss: any = Object.keys(options.data.className);
+  const fetchedCss = fetchCss(
+    elObjectRedux.elementObjectData,
+    options.data.className
+  );
 
-  getCss = getCss.reduce((p: any, c: any) => {
-    let cssData = eod.elementObjectData[c].css;
-    p = { ...p, ...cssData };
-    return p;
-  }, {});
+  //! disable property
+  ["position", "top", "left", "color", "boxShadow"].map((i) => {
+    if (fetchedCss[i]) delete fetchedCss[i];
+  });
 
-  const Styles: CSSProperties = {
-    left: options.data.position.x + "px",
-    top: options.data.position.y + "px",
-    backgroundColor:
-      options.data.type === "Text Content" ? "transparent" : "#2d2d2d",
+  const style: React.CSSProperties = {
+    left: setPx(options.data.position.x),
+    top: setPx(options.data.position.y),
+    backgroundColor: _if(
+      options.data.type,
+      SelectDataEnum.txc,
+      "transparent",
+      color.primary
+    ),
+    width: _if(
+      options.data.type,
+      SelectDataEnum.nm,
+      setPx(260),
+      setPx(options.data.w)
+    ),
+    height: _if(
+      options.data.type,
+      SelectDataEnum.nm,
+      "max-content",
+      setPx(options.data.h)
+    ),
+    borderRadius: _if(options.data.type, SelectDataEnum.nm, setPx(7), setPx(0)),
     zIndex: "5",
-    width:
-      options.data.type === "Node Model" ? 260 + "px" : options.data.w + "px",
-    height:
-      options.data.type === "Node Model"
-        ? "max-content"
-        : options.data.h + "px",
-    borderRadius: options.data.type === "Node Model" ? 7 + "px" : 0 + "px",
     ...options.style,
-    ...getCss,
+    ...fetchedCss,
   };
 
+  if (options.data.type === SelectDataEnum.txc) {
+    return (
+      <div ref={eleRef} style={style} onClick={options.listener}>
+        <div>{options.data.text}</div>
+      </div>
+    );
+  }
+
   return (
-    <div ref={eleRef} style={Styles} onClick={options.onClick}>
-      {options.data.type === "Node Model" ? (
-        <NodeModel data={options.data} />
-      ) : (
-        <>
-          {options.data.type === "Text Content" ? (
-            <div>{options.data.text}</div>
-          ) : null}
-          {options.children}
-        </>
-      )}
+    <div ref={eleRef} style={style} onClick={options.listener}>
+      {options.children}
     </div>
   );
 }

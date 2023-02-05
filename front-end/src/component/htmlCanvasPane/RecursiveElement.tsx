@@ -1,30 +1,31 @@
+import { fetchCss } from "../../logic/proto_pen_method/proto_css_fetch";
 import { setActiveElement } from "../../logic/redux-store/feature/ElementObjectSlice";
 import { useAppDispatch, useAppSelector } from "../../logic/redux-store/hooks";
+import { boxShadow } from "../../logic/theme/property";
 
 export function RecursiveElement({ data }: { data: string[] }) {
-  const eODR = useAppSelector((state) => state.elementObject);
+  const elObjectRedux = useAppSelector((state) => state.elementObject);
   const dispatch = useAppDispatch();
+  const selectedElementList = new Set(elObjectRedux.selectedElement);
 
   return (
     <>
       {data.map((i: string, index) => {
-        if (!eODR.elementObjectData[i]) {
+        if (!elObjectRedux.elementObjectData[i]) {
           return <></>;
         }
 
-        let getCss: any = Object.keys(eODR.elementObjectData[i].className);
-
-        getCss = getCss.reduce((p: any, c: any) => {
-          let cssData = eODR.elementObjectData[c].css;
-          p = { ...p, ...cssData };
-          return p;
-        }, {});
-
         const style = {
-          width: eODR.elementObjectData[i].w,
-          height: eODR.elementObjectData[i].h,
-          boxShadow: i === eODR.activeElement ? "0px 0px 0px 2px #2183e9" : "",
-          ...getCss,
+          width: elObjectRedux.elementObjectData[i].w,
+          height: elObjectRedux.elementObjectData[i].h,
+          boxShadow: boxShadow(
+            i === elObjectRedux.activeElement,
+            selectedElementList.has(i)
+          ),
+          ...fetchCss(
+            elObjectRedux.elementObjectData,
+            elObjectRedux.elementObjectData[i].className
+          ),
         };
 
         return (
@@ -35,10 +36,10 @@ export function RecursiveElement({ data }: { data: string[] }) {
               dispatch(setActiveElement(i));
             }}
           >
-            {eODR.elementObjectData[i].text}
-            {eODR.elementObjectData[i].relationship.children ? (
+            {elObjectRedux.elementObjectData[i].text}
+            {elObjectRedux.elementObjectData[i].relationship.children ? (
               <RecursiveElement
-                data={eODR.elementObjectData[i].relationship.children}
+                data={elObjectRedux.elementObjectData[i].relationship.children}
               />
             ) : null}
           </div>

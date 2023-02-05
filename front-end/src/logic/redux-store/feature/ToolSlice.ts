@@ -29,26 +29,26 @@ const toolSlice = createSlice({
   name: "dialog",
   initialState,
   reducers: {
-    toggleToolsState: (state, action: PayloadAction<ToolsKey>) => {
+    toggleToolsState: (state, action: PayloadAction<{name:ToolsKey; state: boolean}>) => {
       let type = action.payload;
-      switch (type) {
+      switch (type.name) {
         case "newElementTool":
-          state.newElementTool.state = !state.newElementTool.state;
+          state.newElementTool.state = type.state;
           break;
         case "locationTool":
-          state.locationTool.state = !state.locationTool.state;
+          state.locationTool.state = type.state;
           break;
         case "moveTool":
-          state.moveTool.state = !state.moveTool.state;
+          state.moveTool.state = type.state;
           break;
         case "arrangeTool":
-          state.arrangeTool.state = !state.arrangeTool.state;
+          state.arrangeTool.state = type.state;
           break;
         case "propertyTool":
-          state.propertyTool.state = !state.propertyTool.state;
+          state.propertyTool.state = type.state;
           break;
         case "groupTool":
-          state.groupTool.state = !state.groupTool.state;
+          state.groupTool.state = type.state;
           break;
       }
     },

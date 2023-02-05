@@ -13,6 +13,7 @@ export interface ProtoPenElement {
     dy: number;
   };
   relationship: {
+    parent: string[];
     status: boolean;
     children: string[];
   };
@@ -48,6 +49,7 @@ export function createProtoPenElement(
     type: "Box Model",
     text: "",
     relationship: {
+      parent: [],
       status: false,
       children: [],
     },

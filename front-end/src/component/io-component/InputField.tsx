@@ -13,6 +13,7 @@ interface InputFieldArgs {
   type?: any;
   value?: any;
   onChange?: any;
+  onEnter?: any;
   style?: React.CSSProperties;
   readonly?: boolean;
   labelWidth?: number;
@@ -59,6 +60,8 @@ export function InputField(options: InputFieldArgs) {
         value={options.value}
         placeholder={options.placeHolder}
         readOnly={options.readonly ? true : false}
+        onKeyDown={options.onEnter}
+        min={1}
       />
     </div>
   );
@@ -95,16 +98,19 @@ interface SelectBoxArgs {
   sBW?: number;
   sLaW?: number;
   seLaW?: number;
+  label?: string;
+  onClick?: any;
+  direct?: any;
 }
 
 export function SelectBox(options: SelectBoxArgs) {
   const [show, setShow] = useState(false);
   const [selectTitle, setSelectTitle] = useState("");
   const [input, setInput] = useState("");
-  const [filteredData, setFilteredData] = useState(options.dataSet);
+  const [filteredData, setFilteredData] = useState(options.dataSet? options.dataSet : []);
 
   useEffect(() => {
-    if (!options.searchBox) setFilteredData(options.dataSet);
+    if (!options.searchBox) setFilteredData(options.dataSet as any);
   }, []);
 
   const handleSearch = useCallback(
@@ -115,17 +121,22 @@ export function SelectBox(options: SelectBoxArgs) {
     []
   );
 
+  useEffect(()=>{
+    setFilteredData(options.direct)
+  },[options.direct])
+
   return (
     <>
       <FieldWarper px={16} py={1} justify="flex-start">
         <Button.Label
-          label="Type"
+          label={options.label}
           laW={options.sLaW}
           h={35}
           w={options.sBW}
           r={7}
           primary={true}
           listener={() => {
+            if(options.onClick) options.onClick();
             setShow((i) => !i);
           }}
         >
@@ -134,7 +145,7 @@ export function SelectBox(options: SelectBoxArgs) {
       </FieldWarper>
 
       {options.searchBox && show ? (
-        <FieldWarper direction="column" align="flex-start" px={5} py={5}>
+        <FieldWarper direction="column" align="flex-start" px={16} py={5}>
           <InputField
             label={"search"}
             iMrL={0}
@@ -145,6 +156,19 @@ export function SelectBox(options: SelectBoxArgs) {
               setInput(ev.target.value);
               handleSearch(ev.target.value);
             }}
+            onEnter={(ev:any)=>{
+              if(ev.key === "Enter"){
+                let searchValue = ev.target.value;
+                if(options.dataSet?.includes(searchValue)){
+                  options.onChange(searchValue);
+                  setSelectTitle(searchValue);
+                  setShow(false);
+                  setInput("")
+                  setFilteredData([])
+                }
+              }
+            }}
+            placeHolder="Search...."
           />
         </FieldWarper>
       ) : null}
@@ -153,7 +177,7 @@ export function SelectBox(options: SelectBoxArgs) {
         <FieldWarper
           align="flex-end"
           direction="column"
-          px={16}
+          px={8}
           py={5}
           style={{
             width: "100%",
@@ -179,6 +203,8 @@ export function SelectBox(options: SelectBoxArgs) {
                   options.onChange(i);
                   setSelectTitle(i);
                   setShow(false);
+                  setInput("")
+                  setFilteredData([])
                 }}
               >
                 {i}
