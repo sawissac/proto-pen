@@ -1,12 +1,15 @@
 import React from "react";
 import CustomStyle from "../../custom.module.css";
 import { useAppDispatch, useAppSelector } from "../../logic/redux-store/hooks";
-import { changeToolsPos } from "../../logic/redux-store/feature/ToolSlice";
+import {
+  changeToolsPos,
+  toggleToolsState,
+} from "../../logic/redux-store/feature/ToolSlice";
 import { setCursorSelectArea } from "../../logic/redux-store/feature/UserInterfaceSlice";
 import { ProtoPenElement } from "../../logic/proto_pen_method/proto_create_element";
 import { Pin } from "./Pin";
 import { boxShadow } from "../../logic/theme/property";
-import { SelectScreenBox } from "./SelectScreenBox";
+import { SelectScreenArea, SelectScreenBox } from "./SelectScreenBox";
 import { RecursiveElement } from "./RecursiveElement";
 import { MoveElement } from "./MoveElement";
 import { color } from "../../logic/theme/color";
@@ -34,7 +37,7 @@ export const ScreenPane = React.forwardRef((options: any, canvasRef: any) => {
   const canvasSpaceRef = React.useRef(null);
   const selectBoxRef = React.useRef(null);
   const pinRef = React.useRef(null);
-
+  const canvasSpaceSelectAreaRef = React.useRef(null);
   const styles: { [options: string]: React.CSSProperties } = {
     canvas: {
       width: userInterfaceRedux.canvasWidth + "px",
@@ -51,6 +54,34 @@ export const ScreenPane = React.forwardRef((options: any, canvasRef: any) => {
       position: "relative",
     },
   };
+  //! canvas pin
+  React.useEffect(() => {
+    const canvasSpace = current(canvasSpaceRef);
+
+    function mouseClickHandler(ev: MouseEvent) {
+      if (ev.ctrlKey) {
+        dispatch(
+          changeToolsPos({
+            name: "pin",
+            position: {
+              x: ev.offsetX,
+              y: ev.offsetY - 20,
+            },
+          })
+        );
+      }
+    }
+
+    if (canvasSpace) {
+      listener("click", canvasSpace, mouseClickHandler);
+    }
+
+    return () => {
+      if (canvasSpace) {
+        removeListener("click", canvasSpace, mouseClickHandler);
+      }
+    };
+  }, []);
 
   //! canvas Scroll
   React.useEffect(() => {
@@ -73,7 +104,8 @@ export const ScreenPane = React.forwardRef((options: any, canvasRef: any) => {
     let offset = { x: 0, y: 0, dx: 0, dy: 0 };
     let isDrag = false;
     let isHandMove = userInterfaceRedux.handMove;
-    let canvasSpace = current(canvasSpaceRef);
+    let isSelectOn = toolRedux.selectTool.state;
+    let canvasSpaceSelectArea = current(canvasSpaceSelectAreaRef);
 
     function boxPosition(x: number, y: number, width: number, height: number) {
       if (selectBoxRef) {
@@ -96,7 +128,7 @@ export const ScreenPane = React.forwardRef((options: any, canvasRef: any) => {
     }
     function mouseMoveHandler(ev: MouseEvent) {
       //! box select event
-      if (isDrag && !isHandMove) {
+      if (isDrag && !isHandMove && isSelectOn) {
         currentOffset.x = ev.offsetX;
         currentOffset.y = ev.offsetY;
         if (currentOffset.x > preOffset.x && currentOffset.y > preOffset.y) {
@@ -169,8 +201,8 @@ export const ScreenPane = React.forwardRef((options: any, canvasRef: any) => {
       preOffset = { x: 0, y: 0 };
       currentOffset = { x: 0, y: 0 };
       isDrag = false;
+      dispatch(toggleToolsState({ name: "selectTool", state: false }));
     }
-
     function mouseClickHandler(ev: MouseEvent) {
       if (ev.ctrlKey) {
         dispatch(
@@ -185,20 +217,28 @@ export const ScreenPane = React.forwardRef((options: any, canvasRef: any) => {
       }
     }
 
-    listener("mousedown", canvasSpace, mouseDownHandler);
-    listener("mouseLeave", canvasSpace, mouseLeaveHandler);
-    listener("mouseup", canvasSpace, mouseUpHandler);
-    listener("mousemove", canvasSpace, mouseMoveHandler);
-    listener("click", canvasSpace, mouseClickHandler);
+    if (canvasSpaceSelectArea) {
+      listener("mousedown", canvasSpaceSelectArea, mouseDownHandler);
+      listener("mouseLeave", canvasSpaceSelectArea, mouseLeaveHandler);
+      listener("mouseup", canvasSpaceSelectArea, mouseUpHandler);
+      listener("mousemove", canvasSpaceSelectArea, mouseMoveHandler);
+      listener("click", canvasSpaceSelectArea, mouseClickHandler);
+    }
 
     return () => {
-      removeListener("mousedown", canvasSpace, mouseDownHandler);
-      removeListener("mouseLeave", canvasSpace, mouseLeaveHandler);
-      removeListener("mouseup", canvasSpace, mouseUpHandler);
-      removeListener("mousemove", canvasSpace, mouseMoveHandler);
-      removeListener("click", canvasSpace, mouseClickHandler);
+      if (canvasSpaceSelectArea) {
+        removeListener("mousedown", canvasSpaceSelectArea, mouseDownHandler);
+        removeListener("mouseLeave", canvasSpaceSelectArea, mouseLeaveHandler);
+        removeListener("mouseup", canvasSpaceSelectArea, mouseUpHandler);
+        removeListener("mousemove", canvasSpaceSelectArea, mouseMoveHandler);
+        removeListener("click", canvasSpaceSelectArea, mouseClickHandler);
+      }
     };
-  }, [userInterfaceRedux.handMove]);
+  }, [
+    userInterfaceRedux.handMove,
+    toolRedux.selectTool.state,
+    canvasSpaceSelectAreaRef,
+  ]);
 
   //! canvas hand move
   React.useEffect(() => {
@@ -220,7 +260,6 @@ export const ScreenPane = React.forwardRef((options: any, canvasRef: any) => {
         });
       }
     }
-
     function wheelHandler(ev: any) {
       ev.preventDefault();
       if (userInterfaceRedux.handMove) {
@@ -267,11 +306,13 @@ export const ScreenPane = React.forwardRef((options: any, canvasRef: any) => {
 
   const selectedElementList = new Set(elementObjectRedux.selectedElement);
   const activeElement = elementObjectRedux.activeElement;
-  const listOfElement = Object.values(elementObjectRedux.elementObjectData).filter(i => i.type !== SelectDataEnum.nm);
+  const listOfElement = Object.values(
+    elementObjectRedux.elementObjectData
+  ).filter((i) => i.type !== SelectDataEnum.nm);
 
-  const normalElements = listOfElement.filter(
-    (i) => i.relationship.status === false
-  );
+  const normalElements = listOfElement
+    .filter((i) => i.relationship.status === false)
+    .sort((a, b) => b.layer - a.layer);
 
   const relationshipElements = listOfElement.filter(
     (i) => i.relationship.status === true
@@ -336,7 +377,11 @@ export const ScreenPane = React.forwardRef((options: any, canvasRef: any) => {
           );
         })}
 
-        <SelectScreenBox ref={selectBoxRef} />
+        {toolRedux.selectTool.state ? (
+          <SelectScreenArea ref={canvasSpaceSelectAreaRef}>
+            <SelectScreenBox ref={selectBoxRef} />
+          </SelectScreenArea>
+        ) : null}
       </div>
     </div>
   );

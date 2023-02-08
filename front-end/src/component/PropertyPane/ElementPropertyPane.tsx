@@ -7,7 +7,7 @@ import { FieldWarper, InputField, SelectBox } from "../io-component/InputField";
 import { CssProperty } from "../../logic/css-properties";
 import { camelCase } from "lodash";
 import { color } from "../../logic/theme/color";
-import { border, setPx } from "../../logic/theme/property";
+import { border, radius, setPx } from "../../logic/theme/property";
 import Description from "../io-component/Description";
 import {
   disconnectCssSharedChild,
@@ -154,7 +154,8 @@ export function ElementPropertyPane() {
             sBW={136}
             seLaW={70}
             searchBox={true}
-            label="Property"
+            selectTitle="Property"
+            label="Select"
             onChange={(value: any) => {
               setCssPropSelectBox(value);
             }}
@@ -212,178 +213,6 @@ export function ElementPropertyPane() {
     </LayerPane>
   );
 }
-
-// {activeElement ? (
-//         <div style={{ paddingBottom: "7px" }}>
-//           <Title value="Node Model" />
-//           <Divider />
-//           <FieldWarper px={16} py={5}>
-//             <Button.Click
-//               r={7}
-//               h={35}
-//               style={{ width: "100%" }}
-//               listener={() => {
-//                 dispatch(
-//                   duplicateElement({
-//                     activeElement: data.name,
-//                     canvasSpace: userInterfaceRedux.canvasSpaceSize,
-//                   })
-//                 );
-//               }}
-//             >
-//               Duplicate
-//             </Button.Click>
-//           </FieldWarper>
-//           <Divider />
-//           <Title value="Shared Child" />
-//           <Divider />
-//           <FieldWarper px={0} py={5} direction="column">
-//             <SelectBox
-//               direct={child}
-//               sLaW={93}
-//               sBW={136}
-//               seLaW={97}
-//               label="Child"
-//               onChange={(value: any) => {
-//                 const cssSharedChild = {
-//                   ...elementObjectRedux.elementObjectData[data.name]
-//                     .cssSharedChild,
-//                   [value]: "shared",
-//                 };
-//                 dispatch(
-//                   sharedCss({
-//                     activeEl: data.name,
-//                     cssSharedChild: cssSharedChild,
-//                   })
-//                 );
-//               }}
-//               onClick={() => {
-//                 const elementObjectReduxbjectDataList = Object.values(
-//                   elementObjectRedux.elementObjectData
-//                 );
-//                 const listWithOutNodeModel: any =
-//                   elementObjectReduxbjectDataList.reduce((p: string[], c) => {
-//                     if (c.type !== SelectDataEnum.nm) {
-//                       p.push(c.name);
-//                     }
-//                     return p;
-//                   }, []);
-//                 setChild(listWithOutNodeModel);
-//               }}
-//             />
-//           </FieldWarper>
-//           <FlexTable
-//             idW={95}
-//             vW={86}
-//             dW={45}
-//             data={
-//               elementObjectRedux.elementObjectData[data.name].cssSharedChild
-//             }
-//             defaultValue="No Child is shared!"
-//             onDelete={(value: any) => {
-//               dispatch(
-//                 disconnectCssSharedChild({
-//                   activeEl: data.name,
-//                   deleteName: value,
-//                 })
-//               );
-//             }}
-//           />
-//           <Divider />
-//           <FieldWarper px={0} py={5} direction="column">
-//             <SelectBox
-//               dataSet={Object.keys(CssProperty)}
-//               sLaW={93}
-//               sBW={136}
-//               seLaW={86}
-//               searchBox={true}
-//               label="Property"
-//               onChange={(value: any) => {
-//                 setCssPropSelectBox(value);
-//               }}
-//             />
-//           </FieldWarper>
-//           <FieldWarper direction="column" px={16} py={5}>
-//             <InputField
-//               label="Value"
-//               labelWidth={150}
-//               style={{ width: "100%", textAlign: "center", marginTop: "7px" }}
-//               value={cssValue}
-//               onChange={(ev: any) => {
-//                 setCssValue(ev.target.value);
-//               }}
-//             />
-//           </FieldWarper>
-//           {cssPropSelectBox ? (
-//             <FieldWarper direction="column" px={16} py={5}>
-//               <Description
-//                 h={"max-content"}
-//                 value={CssProperty[cssPropSelectBox].syntax}
-//                 border
-//               />
-//             </FieldWarper>
-//           ) : null}
-//           <FieldWarper px={16} py={5}>
-//             <Button.Click
-//               r={7}
-//               h={35}
-//               style={{ width: "100%" }}
-//               listener={() => {
-//                 const css = {
-//                   ...elementObjectRedux.elementObjectData[data.name].css,
-//                   [camelCase(cssPropSelectBox)]: cssValue,
-//                 };
-//                 dispatch(
-//                   updateCssProps({
-//                     activeEl: data.name,
-//                     css,
-//                   })
-//                 );
-//               }}
-//             >
-//               Set
-//             </Button.Click>
-//           </FieldWarper>
-//           <Divider />
-//           <Title value="Quick Action" />
-//           <Divider />
-//           <QuickAction
-//             setCss={(cssData: React.CSSProperties) => {
-//               const css = {
-//                 ...elementObjectRedux.elementObjectData[data.name].css,
-//                 ...cssData,
-//               };
-//               dispatch(
-//                 updateCssProps({
-//                   activeEl: data.name,
-//                   css,
-//                 })
-//               );
-//             }}
-//           />
-//           <Divider />
-//           <Title value="CSS Props" />
-//           <FlexTable
-//             idW={95}
-//             vW={86}
-//             dW={45}
-//             data={elementObjectRedux.elementObjectData[data.name].css}
-//             defaultValue="No value is set!"
-//             onDelete={(value: any) => {
-//               const copy: any = {
-//                 ...elementObjectRedux.elementObjectData[data.name].css,
-//               };
-//               delete copy[value];
-//               dispatch(
-//                 updateCssProps({
-//                   activeEl: data.name,
-//                   css: copy,
-//                 })
-//               );
-//             }}
-//           />
-//         </div>
-//       ) : null}
 
 interface QuickActionInterface {
   setCss: any;
@@ -448,21 +277,15 @@ function QuickAction(options: QuickActionInterface) {
     },
     borderRounded: {
       icon: IconBorderRadius,
-      style: {
-        borderRadius: "7px",
-      },
+      style: { borderRadius: radius(7, 7, 7, 7) },
     },
     borderFlat: {
       icon: IconBorderStyle,
-      style: {
-        borderRadius: "0px",
-      },
+      style: { borderRadius: radius(0, 0, 0, 0) },
     },
     borderPill: {
       icon: IconPill,
-      style: {
-        borderRadius: "9999px",
-      },
+      style: { borderRadius: radius(9999, 9999, 9999, 9999) },
     },
     shadow: {
       icon: IconShadow,

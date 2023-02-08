@@ -35,7 +35,7 @@ const elementObjectSlice = createSlice({
   name: "userInterface",
   initialState,
   reducers: {
-    createElementObject(
+    createElementObject: (
       state,
       action: PayloadAction<{
         uid: number;
@@ -44,7 +44,7 @@ const elementObjectSlice = createSlice({
         a: number;
         times: number;
       }>
-    ) {
+    ) => {
       const size = action.payload.uid;
       const { w, h, a, times } = action.payload;
       let nextSize = 0;
@@ -61,6 +61,22 @@ const elementObjectSlice = createSlice({
         nextSize = i + 1;
       }
       state.uniqueId = nextSize;
+    },
+    duplicateElementObject: (state) => {
+      let id = state.uniqueId;
+      let activeElement = state.activeElement;
+      let elo = state.elementObjectData;
+      let name = "eid-" + id;
+      elo[name] = createProtoPenElement(name, id, 0, 0, 0);
+      elo[name].text = elo[activeElement].text + "- copy";
+      elo[name].position.x = elo[activeElement].position.x + 50;
+      elo[name].position.y = elo[activeElement].position.y + 50;
+      elo[name].w = elo[activeElement].w;
+      elo[name].h = elo[activeElement].h;
+      elo[name].className = elo[activeElement].className;
+      elo[name].relationship = elo[activeElement].relationship;
+      elo[name].type = elo[activeElement].type;
+      state.uniqueId = id + 1;
     },
     setActiveElementPos: (
       state,
@@ -242,6 +258,7 @@ const elementObjectSlice = createSlice({
       let { name } = action.payload;
       let eid = "eid-" + id;
       elo[eid] = createProtoPenElement(eid, id, 0, 0, 0);
+      elo[eid].css = { width: "50px", height: "50px" };
       elo[eid].text = name;
       elo[eid].type = SelectDataEnum.nm;
       state.uniqueId = id + 1;
@@ -295,6 +312,7 @@ export const {
   setTypeOfActiveObject,
   setWidthOfActiveObject,
   groupToActiveElement,
+  duplicateElementObject,
   updateCssProps,
   sharedCss,
   disconnectCssSharedChild,

@@ -31,3 +31,7 @@ export const background = (active: boolean, selected: boolean) => {
 export const _if = (value: any, meet: any, trueV: any, falseV: any) => {
   return value === meet ? trueV : falseV;
 };
+
+export const radius = (tl: number,tr: number,br: number,bl: number): string=>{
+  return `${setPx(tl)} ${setPx(tr)} ${setPx(br)} ${setPx(bl)}`;
+}

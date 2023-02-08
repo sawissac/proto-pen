@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Children } from "react";
 
 export const SelectScreenBox = React.forwardRef((options: any, ref: any) => {
   return (
@@ -12,5 +12,21 @@ export const SelectScreenBox = React.forwardRef((options: any, ref: any) => {
         zIndex: 9998,
       }}
     ></div>
+  );
+});
+
+export const SelectScreenArea = React.forwardRef((options: any, ref: any) => {
+  return (
+    <div
+      ref={ref}
+      style={{
+        position: "absolute",
+        inset: 0,
+        backgroundColor: "transparent",
+        zIndex: 9999,
+      }}
+    >
+      {options.children}
+    </div>
   );
 });

@@ -15,11 +15,11 @@ interface NewLayerDialogArgs {
   parent: any;
 }
 
-export const SelectData = ["Text Content", "Box Model", "Node Model"];
+export const SelectData = ["Text Content", "Box Model"];
 export const SelectDataEnum = {
   txc: SelectData[0],
   bm: SelectData[1],
-  nm: SelectData[2],
+  nm: "Node Model"
 };
 export function PropertyTool(options: NewLayerDialogArgs) {
   const toolRedux = useAppSelector((state) => state.tool);
@@ -56,8 +56,9 @@ export function PropertyTool(options: NewLayerDialogArgs) {
       </FieldWarper>
       <FieldWarper px={0} py={5} direction="column">
         <SelectBox
-          label="Type"
+          label="Select"
           direct={SelectData}
+          selectTitle="Type"
           sLaW={100}
           sBW={165}
           onChange={(type: string) => {
@@ -66,7 +67,7 @@ export function PropertyTool(options: NewLayerDialogArgs) {
         />
       </FieldWarper>
 
-      {input.type === SelectDataEnum.txc || input.type === SelectDataEnum.nm ? (
+      {input.type === SelectDataEnum.txc ? (
         <>
           <FieldWarper direction="column" align="flex-start" px={16} py={5}>
             <InputField
@@ -101,7 +102,6 @@ export function PropertyTool(options: NewLayerDialogArgs) {
                 })
               );
             }
-
             if (!activeElement) {
               dispatch(
                 setMessage({

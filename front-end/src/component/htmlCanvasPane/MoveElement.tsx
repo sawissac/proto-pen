@@ -90,7 +90,7 @@ export function MoveElement(options: MoveElementArgs) {
       setPx(options.data.h)
     ),
     borderRadius: _if(options.data.type, SelectDataEnum.nm, setPx(7), setPx(0)),
-    zIndex: "5",
+    zIndex:options.data.layer,
     ...options.style,
     ...fetchedCss,
   };

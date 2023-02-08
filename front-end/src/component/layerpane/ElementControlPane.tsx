@@ -1,10 +1,11 @@
-import CustomStyles from "../custom.module.css";
-import { LayerPane } from "./LayerPane";
-import { useAppDispatch, useAppSelector } from "../logic/redux-store/hooks";
-import { setActiveElement } from "../logic/redux-store/feature/ElementObjectSlice";
-import { Button } from "./io-component/Button";
-import { background } from "../logic/theme/property";
-import { SelectDataEnum } from "./tools/PropertyTool";
+import CustomStyles from "../../custom.module.css";
+import { LayerPane } from "../LayerPane";
+import { useAppDispatch, useAppSelector } from "../../logic/redux-store/hooks";
+import { setActiveElement } from "../../logic/redux-store/feature/ElementObjectSlice";
+import { Button } from "../io-component/Button";
+import { background } from "../../logic/theme/property";
+import { SelectDataEnum } from "../tools/PropertyTool";
+import ControlPaneControl from "./ControlPaneControl";
 
 export function ElementControlPane() {
   const userInterfaceRedux = useAppSelector((state) => state.userInterface);
@@ -12,10 +13,13 @@ export function ElementControlPane() {
   const dispatch = useAppDispatch();
 
   const selectedElementList = elementObjectRedux.selectedElement;
-  const elementList = Object.values(elementObjectRedux.elementObjectData).filter(i => i.type !== SelectDataEnum.nm);
+  const elementList = Object.values(
+    elementObjectRedux.elementObjectData
+  ).filter((i) => i.type !== SelectDataEnum.nm);
   const activeElement = elementObjectRedux.activeElement;
   const selectedElement = new Set(selectedElementList);
-  
+  const sortedByLayer = elementList.sort((a, b) => b.layer - a.layer);
+
   return (
     <LayerPane
       className={CustomStyles.protoPenScrollbarPrimary}
@@ -25,7 +29,8 @@ export function ElementControlPane() {
       justify="flex-start"
       flowY={true}
     >
-      {elementList.map((i, index) => {
+      <ControlPaneControl />
+      {sortedByLayer.map((i, index) => {
         return (
           <Button.Click
             key={index}

@@ -94,6 +94,7 @@ export function FieldWarper(options: FieldWarper) {
 interface SelectBoxArgs {
   dataSet?: string[];
   onChange?: any;
+  selectTitle?: string;
   searchBox?: boolean;
   sBW?: number;
   sLaW?: number;
@@ -140,7 +141,7 @@ export function SelectBox(options: SelectBoxArgs) {
             setShow((i) => !i);
           }}
         >
-          {selectTitle ? selectTitle : "Select Type"}
+          {selectTitle ? selectTitle : options.selectTitle}
         </Button.Label>
       </FieldWarper>
 
@@ -204,7 +205,6 @@ export function SelectBox(options: SelectBoxArgs) {
                   setSelectTitle(i);
                   setShow(false);
                   setInput("")
-                  setFilteredData([])
                 }}
               >
                 {i}

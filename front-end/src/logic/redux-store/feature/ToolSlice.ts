@@ -13,6 +13,9 @@ const initialState = {
   arrangeTool: DefaultToolState,
   propertyTool: DefaultToolState,
   groupTool: DefaultToolState,
+  selectTool: DefaultToolState,
+  colorPaletteTool: DefaultToolState,
+  noteBookTool: DefaultToolState,
 };
 
 type ToolsKey = keyof typeof initialState;
@@ -26,10 +29,13 @@ type ChangeToolPosPayload = {
 };
 
 const toolSlice = createSlice({
-  name: "dialog",
+  name: "tool",
   initialState,
   reducers: {
-    toggleToolsState: (state, action: PayloadAction<{name:ToolsKey; state: boolean}>) => {
+    toggleToolsState: (
+      state,
+      action: PayloadAction<{ name: ToolsKey; state: boolean }>
+    ) => {
       let type = action.payload;
       switch (type.name) {
         case "newElementTool":
@@ -49,6 +55,15 @@ const toolSlice = createSlice({
           break;
         case "groupTool":
           state.groupTool.state = type.state;
+          break;
+        case "selectTool":
+          state.selectTool.state = type.state;
+          break;
+        case "colorPaletteTool":
+          state.colorPaletteTool.state = type.state;
+          break;
+        case "noteBookTool":
+          state.noteBookTool.state = type.state;
           break;
       }
     },
@@ -77,6 +92,15 @@ const toolSlice = createSlice({
           break;
         case "groupTool":
           state.groupTool.position = action.payload.position;
+          break;
+        case "selectTool":
+          state.selectTool.position = action.payload.position;
+          break;
+        case "colorPaletteTool":
+          state.colorPaletteTool.position = action.payload.position;
+          break;
+        case "noteBookTool":
+          state.noteBookTool.position = action.payload.position;
           break;
       }
     },

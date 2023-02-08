@@ -4,7 +4,7 @@ import { ScreenDetection } from "./logic/screen_detection";
 import { ActionPane } from "./component/ActionPane";
 import { ScreenPane } from "./component/htmlCanvasPane/ScreenPane";
 import { NewElementTool } from "./component/tools/NewElementTool";
-import { ElementControlPane } from "./component/ElementControlPane";
+import { ElementControlPane } from "./component/layerpane/ElementControlPane";
 import { LocationTool } from "./component/tools/LocationTool";
 import { current } from "./logic/proto_pen_method/proto_event";
 import { MoveTool } from "./component/tools/MoveTool";
@@ -20,6 +20,8 @@ import {
 import MessageDialog from "./component/MessageDialog";
 import { setActiveElement, setSelectedElement } from "./logic/redux-store/feature/ElementObjectSlice";
 import { ElementPropertyPane } from "./component/PropertyPane/ElementPropertyPane";
+import { ColorPaletteTool } from "./component/tools/ColorPaletteTool";
+import { NoteBookTool } from "./component/tools/NoteBookTool";
 
 const screenDetection = new ScreenDetection();
 
@@ -81,6 +83,12 @@ function App() {
       ) : null}
       {ToolRedux.groupTool.state ? (
         <GroupTool parent={appInterfaceRef} />
+      ) : null}
+      {ToolRedux.colorPaletteTool.state ? (
+        <ColorPaletteTool parent={appInterfaceRef} />
+      ) : null}
+      {ToolRedux.noteBookTool.state ? (
+        <NoteBookTool parent={appInterfaceRef} />
       ) : null}
       <MessageDialog />
     </div>

@@ -15,10 +15,10 @@ interface ProtoPenButtonInterface {
   px?: number;
   py?: number;
   className?: string;
+  toggle?: boolean;
 }
 
 function Toggle(options: ProtoPenButtonInterface) {
-  const [toggle, setToggle] = React.useState(false);
   const btnStyle = {
     ...generateButtonTheme(
       options.w as number,
@@ -27,13 +27,10 @@ function Toggle(options: ProtoPenButtonInterface) {
       options.px as number,
       options.py as number
     ),
-    backgroundColor: toggle ? color.secondary : color.primary,
+    backgroundColor: options.toggle ? color.secondary : color.primary,
     ...options.style,
   };
 
-  React.useEffect(() => {
-    if (options.listener) options.listener(toggle);
-  }, [toggle]);
 
   return (
     <button
@@ -41,7 +38,7 @@ function Toggle(options: ProtoPenButtonInterface) {
       title={isExist(options.title, "toggle-button")}
       style={btnStyle}
       onClick={() => {
-        setToggle((state: any) => !state);
+        options.listener(!options.toggle);
       }}
     >
       {options.children}

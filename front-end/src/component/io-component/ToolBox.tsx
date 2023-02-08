@@ -4,6 +4,7 @@ import { color } from "../../logic/theme/color";
 
 interface MessageDialogBoxArgs {
   h?: number;
+  w?: number;
   style?: React.CSSProperties;
   children?: React.ReactNode;
 }
@@ -16,7 +17,7 @@ export const ToolBox = React.forwardRef(
       border: border(color.primaryHalf),
       zIndex: 9999,
       cursor: "pointer",
-      width: "300px",
+      width: isExist(setPx(options.w as number),"300px"),
       position: "absolute",
       borderRadius: "7px",
       userSelect: "none",

@@ -18,6 +18,7 @@ import { color } from "../logic/theme/color";
 export function ActionPane() {
   const dispatch = useAppDispatch();
   const userInterfaceRedux = useAppSelector((state) => state.userInterface);
+  const toolRedux = useAppSelector((s) => s.tool);
 
   function setDialog(flag: boolean, message: string) {
     if (flag) {
@@ -48,6 +49,7 @@ export function ActionPane() {
       <Button.Toggle
         w={50}
         h={50}
+        toggle={toolRedux.newElementTool.state}
         listener={(flag: boolean) => {
           dispatch(toggleToolsState({ name: "newElementTool", state: flag }));
           setDialog(flag, "[ W = width, H = height, X = times ]");
@@ -58,6 +60,7 @@ export function ActionPane() {
       <Button.Toggle
         w={50}
         h={50}
+        toggle={userInterfaceRedux.handMove}
         listener={(flag: boolean) => {
           dispatch(toggleHandMove(flag));
           setDialog(flag, "[ Click & drag on the canvas to move ]");
@@ -68,6 +71,7 @@ export function ActionPane() {
       <Button.Toggle
         w={50}
         h={50}
+        toggle={toolRedux.locationTool.state}
         listener={(flag: boolean) => {
           dispatch(toggleToolsState({ name: "locationTool", state: flag }));
           setDialog(flag, "[ X: canvas x, Y: canvas y, N: mark name ]");
@@ -78,6 +82,7 @@ export function ActionPane() {
       <Button.Toggle
         w={50}
         h={50}
+        toggle={toolRedux.moveTool.state}
         listener={(flag: boolean) => {
           dispatch(toggleToolsState({ name: "moveTool", state: flag }));
           setDialog(
@@ -91,6 +96,7 @@ export function ActionPane() {
       <Button.Toggle
         w={50}
         h={50}
+        toggle={toolRedux.arrangeTool.state}
         listener={(flag: boolean) => {
           dispatch(toggleToolsState({ name: "arrangeTool", state: flag }));
           setDialog(flag, "[ C: columns, G: gap ]");
@@ -101,6 +107,7 @@ export function ActionPane() {
       <Button.Toggle
         w={50}
         h={50}
+        toggle={toolRedux.propertyTool.state}
         listener={(flag: boolean) => {
           dispatch(toggleToolsState({ name: "propertyTool", state: flag }));
           setDialog(flag, "[ Select Type to change model ]");
@@ -111,11 +118,42 @@ export function ActionPane() {
       <Button.Toggle
         w={50}
         h={50}
+        toggle={toolRedux.groupTool.state}
         listener={(flag: boolean) => {
           dispatch(toggleToolsState({ name: "groupTool", state: flag }));
         }}
       >
         <Icons.IconBoxModel2 size={18} color="white" />
+      </Button.Toggle>
+      <Button.Toggle
+        w={50}
+        h={50}
+        toggle={toolRedux.selectTool.state}
+        listener={(flag: boolean) => {
+          dispatch(toggleToolsState({ name: "selectTool", state: flag }));
+        }}
+      >
+        <Icons.IconResize size={18} color="white" />
+      </Button.Toggle>
+      <Button.Toggle
+        w={50}
+        h={50}
+        toggle={toolRedux.colorPaletteTool.state}
+        listener={(flag: boolean) => {
+          dispatch(toggleToolsState({ name: "colorPaletteTool", state: flag }));
+        }}
+      >
+        <Icons.IconPalette size={18} color="white" />
+      </Button.Toggle>
+      <Button.Toggle
+        w={50}
+        h={50}
+        toggle={toolRedux.noteBookTool.state}
+        listener={(flag: boolean) => {
+          dispatch(toggleToolsState({ name: "noteBookTool", state: flag }));
+        }}
+      >
+        <Icons.IconNotebook size={18} color="white" />
       </Button.Toggle>
       <Divider />
       <Button.Click
