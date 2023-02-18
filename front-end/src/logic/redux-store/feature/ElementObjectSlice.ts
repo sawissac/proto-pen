@@ -6,7 +6,7 @@ import {
 import { math_half } from "../../proto_pen_method/proto_math";
 import { arrange } from "../../proto_pen_method/proto_arrange";
 import { CSSProperties } from "react";
-import { SelectDataEnum } from "../../../component/tools/PropertyTool";
+import { ComponentModel } from "../../ComponentModel";
 
 interface InitialState {
   uniqueId: number;
@@ -39,14 +39,12 @@ const elementObjectSlice = createSlice({
       state,
       action: PayloadAction<{
         uid: number;
-        w: number;
-        h: number;
         a: number;
         times: number;
       }>
     ) => {
       const size = action.payload.uid;
-      const { w, h, a, times } = action.payload;
+      const { a, times } = action.payload;
       let nextSize = 0;
       for (let i = size; i < times + size; i++) {
         const layer = i;
@@ -54,8 +52,8 @@ const elementObjectSlice = createSlice({
         state.elementObjectData[name] = createProtoPenElement(
           name,
           layer,
-          w,
-          h,
+          50,
+          50,
           math_half(a)
         );
         nextSize = i + 1;
@@ -68,7 +66,6 @@ const elementObjectSlice = createSlice({
       let elo = state.elementObjectData;
       let name = "eid-" + id;
       elo[name] = createProtoPenElement(name, id, 0, 0, 0);
-      elo[name].text = elo[activeElement].text + "- copy";
       elo[name].position.x = elo[activeElement].position.x + 50;
       elo[name].position.y = elo[activeElement].position.y + 50;
       elo[name].w = elo[activeElement].w;
@@ -143,7 +140,7 @@ const elementObjectSlice = createSlice({
 
         //! if node model is deleted it will search it shared child and
         //! delete it name in the child class name
-        if (type === SelectDataEnum.nm) {
+        if (type === ComponentModel.nm) {
           const toDeleteCssSharedChild = Object.keys(elo[i].cssSharedChild);
           toDeleteCssSharedChild.map((sharedChildName) => {
             delete elo[sharedChildName].className[i];
@@ -181,7 +178,7 @@ const elementObjectSlice = createSlice({
       state.elementObjectData[state.activeElement].text = action.payload;
     },
     setTypeOfActiveObject: (state, action: PayloadAction<string>) => {
-      if (SelectDataEnum.bm) {
+      if (ComponentModel.bm) {
         state.elementObjectData[state.activeElement].w = 50;
         state.elementObjectData[state.activeElement].h = 50;
       }
@@ -199,7 +196,7 @@ const elementObjectSlice = createSlice({
     groupToActiveElement: (state) => {
       const elo = state.elementObjectData;
       const sle = state.selectedElement.filter(
-        (i) => elo[i].type !== SelectDataEnum.nm
+        (i) => elo[i].type !== ComponentModel.nm
       );
 
       if (sle.length > 0) {
@@ -260,7 +257,7 @@ const elementObjectSlice = createSlice({
       elo[eid] = createProtoPenElement(eid, id, 0, 0, 0);
       elo[eid].css = { width: "50px", height: "50px" };
       elo[eid].text = name;
-      elo[eid].type = SelectDataEnum.nm;
+      elo[eid].type = ComponentModel.nm;
       state.uniqueId = id + 1;
     },
     removeNode: (state, action: PayloadAction<string>) => {
@@ -291,7 +288,7 @@ const elementObjectSlice = createSlice({
       elo[name].text = elo[activeElement].text + "- copy";
       elo[name].css = elo[activeElement].css;
       elo[name].cssSharedChild = {};
-      elo[name].type = SelectDataEnum.nm;
+      elo[name].type = ComponentModel.nm;
       elo[name].position.x = elo[activeElement].position.x + 50;
       elo[name].position.y = elo[activeElement].position.y + 50;
 

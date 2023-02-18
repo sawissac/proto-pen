@@ -1,46 +1,16 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { math_add, math_extract } from "../../proto_pen_method/proto_math";
 
-interface ScreenInterface {
+const initialState = {
   screen: {
-    width: number;
-    height: number;
-  };
-}
-
-interface InitialState {
-  screen: {
-    width: number;
-    height: number;
-  };
-  canvasWidth: number;
-  controlPaneWidth: number;
-  actionPaneWidth: number;
-  canvasSpaceSize: number;
-  handMove: boolean;
-  propertyPaneWidth: number;
-  cursorSelectArea: {
-    x: number;
-    y: number;
-    dx: number;
-    dy: number;
-  };
-  messageDialog: {
-    type: "warning" | "success" | "none";
-    message: string;
-  };
-}
-
-const initialState: InitialState = {
-  screen: {
-    width: 1000,
+    width: 0,
     height: 0,
   },
   canvasWidth: 0,
+  canvasSpaceSize: 5000,
   controlPaneWidth: 200,
   actionPaneWidth: 50,
-  canvasSpaceSize: 5000,
-  handMove: false,
-  propertyPaneWidth: 250,
+  propertyPaneWidth: 230,
   cursorSelectArea: {
     x: 0,
     y: 0,
@@ -48,41 +18,68 @@ const initialState: InitialState = {
     dy: 0,
   },
   messageDialog: {
-    type: "none",
+    type: "info",
     message: "No Message!",
+  },
+  scrollPos: {
+    x: 0,
+    y: 0,
+  },
+  scale: 1,
+  pin: {
+    x: 0,
+    y: 0,
+  },
+  scrollRequest: {
+    x: 0,
+    y: 0,
   },
 };
 
+type InitialState = typeof initialState;
+type MessageType = "warning" | "success" | "info";
 const userInterfaceSlice = createSlice({
   name: "userInterface",
   initialState,
   reducers: {
-    changeScreen: (state, action: PayloadAction<ScreenInterface>) => {
-      state.screen.width = action.payload.screen.width;
-      state.screen.height = action.payload.screen.height;
-      state.canvasWidth =
-        action.payload.screen.width -
-        (state.controlPaneWidth + state.propertyPaneWidth + state.actionPaneWidth);
+    changeScreen: (state, action: PayloadAction<Pick<InitialState, "screen">>) => {
+      let allPaneCombination = math_add(state.controlPaneWidth, state.propertyPaneWidth, state.actionPaneWidth);
+      let calculatedCanvasWidth = math_extract(action.payload.screen.width, allPaneCombination);
+      let { width, height } = action.payload.screen;
+      //? reassign value
+      state.screen.width = width;
+      state.screen.height = height;
+      state.canvasWidth = calculatedCanvasWidth;
     },
-    toggleHandMove: (state, action: PayloadAction<boolean>) => {
-      state.handMove = action.payload;
+    setCursorSelectArea: (state, action: PayloadAction<Pick<InitialState, "cursorSelectArea">>) => {
+      state.cursorSelectArea = action.payload.cursorSelectArea;
     },
-    setCursorSelectArea: (state, action) => {
-      state.cursorSelectArea = action.payload;
+    setUiState: (state, action: PayloadAction<{ name: keyof InitialState; value: any }>) => {
+      const { name, value } = action.payload;
+      switch (name) {
+        case "cursorSelectArea":
+          state.cursorSelectArea = value;
+          break;
+        case "pin":
+          state.pin = value;
+          break;
+        case "scrollPos":
+          state.scrollPos = value;
+          break;
+        case "scale":
+          state.scale = value;
+          break;
+        case "scrollRequest":
+          state.scrollRequest = value;
+          break;
+      }
     },
-    setMessage: (
-      state,
-      action: PayloadAction<{
-        type: "warning" | "success" | "none";
-        message: string;
-      }>
-    ) => {
+    setMessage: (state, action: PayloadAction<{ type: MessageType; message: string }>) => {
       state.messageDialog.type = action.payload.type;
       state.messageDialog.message = action.payload.message;
     },
   },
 });
 
-export const { changeScreen, toggleHandMove, setCursorSelectArea, setMessage } =
-  userInterfaceSlice.actions;
+export const { changeScreen, setCursorSelectArea, setMessage, setUiState } = userInterfaceSlice.actions;
 export default userInterfaceSlice.reducer;

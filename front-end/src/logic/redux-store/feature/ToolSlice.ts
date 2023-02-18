@@ -2,31 +2,22 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 const DefaultToolState = {
   state: false,
-  position: { x: 0, y: 0 },
 };
 
 const initialState = {
   newElementTool: DefaultToolState,
   locationTool: DefaultToolState,
   moveTool: DefaultToolState,
-  pin: DefaultToolState,
   arrangeTool: DefaultToolState,
   propertyTool: DefaultToolState,
   groupTool: DefaultToolState,
   selectTool: DefaultToolState,
   colorPaletteTool: DefaultToolState,
   noteBookTool: DefaultToolState,
+  handMove: DefaultToolState,
 };
 
 type ToolsKey = keyof typeof initialState;
-
-type ChangeToolPosPayload = {
-  name: ToolsKey;
-  position: {
-    x: number;
-    y: number;
-  };
-};
 
 const toolSlice = createSlice({
   name: "tool",
@@ -65,42 +56,8 @@ const toolSlice = createSlice({
         case "noteBookTool":
           state.noteBookTool.state = type.state;
           break;
-      }
-    },
-
-    changeToolsPos: (state, action: PayloadAction<ChangeToolPosPayload>) => {
-      let type = action.payload.name;
-
-      switch (type) {
-        case "newElementTool":
-          state.newElementTool.position = action.payload.position;
-          break;
-        case "locationTool":
-          state.locationTool.position = action.payload.position;
-          break;
-        case "moveTool":
-          state.moveTool.position = action.payload.position;
-          break;
-        case "arrangeTool":
-          state.arrangeTool.position = action.payload.position;
-          break;
-        case "pin":
-          state.pin.position = action.payload.position;
-          break;
-        case "propertyTool":
-          state.propertyTool.position = action.payload.position;
-          break;
-        case "groupTool":
-          state.groupTool.position = action.payload.position;
-          break;
-        case "selectTool":
-          state.selectTool.position = action.payload.position;
-          break;
-        case "colorPaletteTool":
-          state.colorPaletteTool.position = action.payload.position;
-          break;
-        case "noteBookTool":
-          state.noteBookTool.position = action.payload.position;
+        case "handMove":
+          state.handMove.state = type.state;
           break;
       }
     },
@@ -108,5 +65,5 @@ const toolSlice = createSlice({
 });
 
 // Action creators are generated for each case reducer function
-export const { toggleToolsState, changeToolsPos } = toolSlice.actions;
+export const { toggleToolsState } = toolSlice.actions;
 export default toolSlice.reducer;

@@ -7,9 +7,9 @@ import elementObjectReducer from './feature/ElementObjectSlice'
 export const store = configureStore({
   reducer: {
     tool: toolReducer,
-    userInterface: userInterfaceReducer,
+    ui: userInterfaceReducer,
     markLocation: markLocationReducer,
-    elementObject: elementObjectReducer
+    object: elementObjectReducer
   },
 });
 
